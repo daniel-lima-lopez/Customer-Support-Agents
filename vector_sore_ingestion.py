@@ -12,15 +12,15 @@ def ingest_docs(doc_path, vs_name):
     loader = TextLoader(file_path=doc_path)
     document = loader.load()
 
-    # split en chunks
+    # chunks splitting
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=200)
     chunks = text_splitter.split_documents(document)
     print(f'\nText splited in {len(chunks)} chunks')
 
-    # evaluamos chunks con embeding y alamcenamos en vector store
+    # evaluation of chunks with embedding and vectore store ingestion
     print(f'\nAdding vector indexes into vector store ...')
     vectorstore = FAISS.from_documents(chunks, embedding)
-    vectorstore.save_local(f'vector_stores/{vs_name}') # guarda en local
+    vectorstore.save_local(f'vector_stores/{vs_name}') # save to local
 
     print('\nDone!')
 

@@ -4,20 +4,7 @@ from langchain_ollama import OllamaEmbeddings
 from langchain.agents import Tool # tool decorator
 from langchain.tools.render import render_text_description # render the description of each tool to include in the prompt
 from langchain_core.output_parsers.string import StrOutputParser
-#from langchain_core.callbacks.base import BaseCallbackHandler # for custom callbacks
 from langchain_community.vectorstores import FAISS # to implement vector stores
-
-
-# class ToolsCallback(BaseCallbackHandler):
-#     def on_llm_start(self, serialized, prompts, *, run_id, parent_run_id = None, tags = None, metadata = None, **kwargs):
-#         print(f'- Input to Tools Agent: {prompts[0]}')        
-#         return super().on_llm_start(serialized, prompts, run_id=run_id, parent_run_id=parent_run_id, tags=tags, metadata=metadata, **kwargs)
-
-#     def on_llm_end(self, response, *, run_id, parent_run_id = None, **kwargs):
-#         print('-------------------------------------------------')
-#         print(print(f'    Answer: {response.generations[0][0].text}'))
-#         print('-------------------------------------------------')
-#         return super().on_llm_end(response, run_id=run_id, parent_run_id=parent_run_id, **kwargs)    
 
 
 class ToolsAgent:
