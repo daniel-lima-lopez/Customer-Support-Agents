@@ -1,0 +1,27 @@
+Troubleshooting Guide for SmartFlow
+1. Device Not Connecting to Wi-Fi
+
+Ensure your router is within 15 meters of the main unit.
+Restart the main unit and your router.
+Verify that the Wi-Fi credentials entered in the app are correct.
+
+2. Inaccurate Water Usage Data
+
+Recalibrate the system through the app.
+Check that all sensors are securely mounted and unobstructed.
+
+3. Leak Detection False Alarms
+
+Inspect the sensors for dirt or moisture.
+Reset the leak detection sensitivity in the app settings.
+
+4. System Offline
+
+Verify the power supply to the main unit.
+Ensure the firmware is updated to the latest version.
+Contact support if the issue persists.
+
+5. Automated Watering Not Working
+
+Ensure the schedule is correctly configured in the app.
+Verify the water valve is open and not obstructed.

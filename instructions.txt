@@ -1,0 +1,34 @@
+Product Name: SmartFlow - Intelligent Home Water Management System
+Description: A cutting-edge system that optimizes water usage for households, monitors leaks, automates watering schedules, and provides real-time insights through a connected mobile app.
+
+Instruction Manual for SmartFlow
+1. Introduction
+Thank you for choosing SmartFlow! This intelligent home water management system is designed to help you save water, detect leaks, and maintain optimal hydration for your garden.
+
+2. Box Contents
+
+SmartFlow Main Unit
+SmartFlow Sensors (3 units)
+Power Adapter
+Mounting Kit
+Quick Start Guide
+
+3. Installation Steps
+
+Position the Sensors: Place sensors near the main water inlet, garden area, and any critical appliances (e.g., washing machine).
+Connect the Main Unit:
+Plug the main unit into a power outlet.
+Connect it to your Wi-Fi network using the mobile app.
+Sync Devices: Use the SmartFlow app to pair the sensors with the main unit.
+Calibrate the System: Run the calibration process via the app to measure water pressure and flow rates.
+
+4. Features
+
+Water Usage Insights: Track water consumption in real time.
+Leak Detection: Receive instant notifications if leaks are detected.
+Automated Watering: Create schedules for your garden based on weather forecasts.
+
+5. Maintenance
+
+Clean sensors monthly using a dry cloth.
+Update firmware through the app to access the latest features.
