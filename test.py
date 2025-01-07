@@ -1,22 +1,12 @@
 from langchain_core.prompts import PromptTemplate
 from langchain_ollama import ChatOllama
 from langchain_ollama import OllamaEmbeddings
-from langchain.agents import tool # tool decorator
+from langchain.agents import Tool # tool decorator
 from langchain.tools.render import render_text_description # render the description of each tool to include in the prompt
 from langchain_core.output_parsers.string import StrOutputParser
-from langchain_core.callbacks.base import BaseCallbackHandler # for custom callbacks
+#from langchain_core.callbacks.base import BaseCallbackHandler # for custom callbacks
 from langchain_community.vectorstores import FAISS # to implement vector stores
 
-
-# @tool
-# def instructions_agent(input:str) -> str:
-#     '''Given a question, returns information about the description of the product, the packet content, its box content, installation steps, main features and maintenance'''
-#     return 'instruction agent'
-
-# @tool
-# def troubleshooting_agent(input:str) -> str:
-#     '''Given a question, returns information about the Troubleshooting Guide, including Wi-Fi connection issues, inaccurate water usage data, leak detection false alarms, system offline, automated watering not working'''
-#     return 'troubleshooting agent'
 
 # class ToolsCallback(BaseCallbackHandler):
 #     def on_llm_start(self, serialized, prompts, *, run_id, parent_run_id = None, tags = None, metadata = None, **kwargs):
@@ -34,12 +24,18 @@ class ToolsAgent:
     def __init__(self, verbose=False):
         self.verbose = verbose # to activate verbose
 
-        # define instructions and troubleshooting RAG agents
-        self.trlb_agent = TroubleshootingRagAgent()
+        # define rag agents
         self.instr_agent = InstructionsRagAgent()
+        self.trbl_agent = TroubleshootingRagAgent()
 
         # tools list (instructions and troubleshooting agents)
-        self.tools = [self.instructions_agent, self.troubleshooting_agent]
+        #self.tools = [instructions_agent, troubleshooting_agent]
+        self.tools = [
+            Tool(name='invoke_instructions_agent', func=self.invoke_instructions_agent,
+            description='Given a question, returns information about the description of the product, product installation instructions, the packet content, its box content, installation steps, main features and maintenance'),
+            Tool(name='invoke_troubleshooting_agent', func=self.invoke_troubleshooting_agent,
+                 description='Given a question, returns information about the Troubleshooting Guide, including Wi-Fi connection issues, inaccurate water usage data, leak detection false alarms, system offline, automated watering not working')
+            ]
         self.tool_names = ", ".join([t.name for t in self.tools])                                   
         
         # prompt definition
@@ -68,28 +64,30 @@ class ToolsAgent:
         self.tools_agent = input_dic | self.tools_promt | self.llm | StrOutputParser()
 
     def invoke_agent(self, question):
-        output = self.tools_agent.invoke({'input': input})
+        output = self.tools_agent.invoke({'input': question})
+
+        # print choosen agent
+        if self.verbose:
+            print('\n-------TOOLS AGENT-------')
+            if output=='invoke_instructions_agent':
+                print('The Tools Agent chose the Instruction Rag Agent')
+            else:
+                print('The Tools Agent chose the Troubleshooting Rag Agent')
         
-        if output=='instructions_agent':
-            self.instructions_agent.invoke(input={'input': question})
-            if self.verbose:
-                print('\nThe Tools Agent chose the Instruction Rag Agent')
+        # invoke the rag agent
+        if output=='invoke_instructions_agent':
+            answer = self.invoke_instructions_agent(question)
         else:
-            self.troubleshooting_agent.invoke(input={'input': question})
-            if self.verbose:
-                print('\nThe Tools Agent chose the Troubleshooting Rag Agent')
-
-        return output
+            answer = self.invoke_troubleshooting_agent(question)
+        return answer
     
-    @tool
-    def instructions_agent(self, input):
+    def invoke_instructions_agent(self, question):
         '''Given a question, returns information about the description of the product, the packet content, its box content, installation steps, main features and maintenance'''
-        return self.instr_agent.invoke_agent(input, verbose=self.verbose)
+        return self.instr_agent.invoke_agent(question, verbose=self.verbose)
 
-    @tool
-    def troubleshooting_agent(self, input):
+    def invoke_troubleshooting_agent(self, question):
         '''Given a question, returns information about the Troubleshooting Guide, including Wi-Fi connection issues, inaccurate water usage data, leak detection false alarms, system offline, automated watering not working'''
-        return self.trlb_agent.invoke_agent(input, verbose=self.verbose)
+        return self.trbl_agent.invoke_agent(question, verbose=self.verbose)
     
 
 class InstructionsRagAgent:
@@ -116,12 +114,12 @@ class InstructionsRagAgent:
                      'question': lambda x: x['question']}
 
         # llm and callback definition
-        self.llm = ChatOllama(model='llama3.1', temperature=0.8)
+        self.llm = ChatOllama(model='llama3.1', temperature=0.6)
 
         # definition of rag agent
         self.agent = input_dic | self.promt_template | self.llm | StrOutputParser()
     
-    def invoke_agent(self, question, verbose):
+    def invoke_agent(self, question, verbose=True):
         # get retriever context from question
         docs = self.retriever.invoke(question)
         context =  "\n\n".join([doc.page_content for doc in docs])
@@ -159,12 +157,12 @@ class TroubleshootingRagAgent:
                      'question': lambda x: x['question']}
 
         # llm and callback definition
-        self.llm = ChatOllama(model='llama3.1', temperature=0.8)
+        self.llm = ChatOllama(model='llama3.1', temperature=0.6)
 
         # definition of rag agent
         self.agent = input_dic | self.promt_template | self.llm | StrOutputParser()
     
-    def invoke_agent(self, question, verbose):
+    def invoke_agent(self, question, verbose=True):
         # get retriever context from question
         docs = self.retriever.invoke(question)
         context =  "\n\n".join([doc.page_content for doc in docs])
@@ -183,12 +181,57 @@ if __name__ == '__main__':
     # output = test.invoke_agent('I have problems with the Wi-Fi connection')
     # print(output)
 
-    #question = 'What are the installation steps to connect the main unit?'
-    question = 'My device is not connecting to the Wi-Fi, what should I do?'
+    question = 'What are the installation steps to connect the main unit?'
+    #question = 'What does the box contains?'
+    #question = 'My device is not connecting to the Wi-Fi, what should I do?'
     print(f'\n-------QUESTION-------\n{question}')
     # test = TroubleshootingRagAgent()
     # anws = test.invoke_agent(question)
-    
+
     test = ToolsAgent(verbose=True)
     answer = test.invoke_agent(question)
     print(f'\n-------ANSWER-------\n{answer}')
+
+
+    # test = ToolsAgent(verbose=True)
+    # answer = test.invoke_agent(question)
+    # print(f'\n-------ANSWER-------\n{answer}')
+
+    # define all agents
+    # tools_agent = ToolsAgent()
+    # instr_agent = InstructionsRagAgent()
+    # trbl_agent = TroubleshootingRagAgent()
+
+    # define the tools for the tools agent
+    # @tool
+    # def instructions_agent(input:str) -> str:
+    #     '''Given a question, returns information about the description of the product, the packet content, its box content, installation steps, main features and maintenance'''
+    #     return instr_agent.invoke_agent(input)
+
+    # @tool
+    # def troubleshooting_agent(input:str) -> str:
+    #     '''Given a question, returns information about the Troubleshooting Guide, including Wi-Fi connection issues, inaccurate water usage data, leak detection false alarms, system offline, automated watering not working'''
+    #     return trbl_agent.invoke_agent(input)
+
+    # given an input query, ask for the right agent
+    # output = tools_agent.invoke_agent(question)
+    
+    # invoke the right agent
+    # if output=='instructions_agent':
+    #     answer = instructions_agent(question)
+    # else:
+    #     answer = troubleshooting_agent(question)
+    # print(f'\n-------ANSWER-------\n{answer}')
+
+
+
+
+
+    # if output=='instructions_agent':
+    #         self.instructions_agent.invoke(input={'input': question})
+    #         if self.verbose:
+    #             print('\nThe Tools Agent chose the Instruction Rag Agent')
+    #     else:
+    #         self.troubleshooting_agent.invoke(input={'input': question})
+    #         if self.verbose:
+    #             print('\nThe Tools Agent chose the Troubleshooting Rag Agent')
