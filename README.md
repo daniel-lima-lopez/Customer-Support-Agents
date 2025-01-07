@@ -43,3 +43,59 @@ if __name__ == '__main__':
     ingest_docs(doc_path='troubleshooting.txt', vs_name='troubleshooting')
 
 ```
+
+## RAG Agents
+Ambos agentes se implementaron con la misma metodologia, en primer lugar, se define un embedding y se procede a realizar la lectura del local vector store con FAISS, y se define un retriever para realizar el proceso de recuperacion de informacion.
+
+Posteriormente se define la plantilla del prompt a usar para aprovechar el modelo Llama 3.1. Este prompt se compone de la siguiente manera:
+
+```
+You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Keep the answer concise.
+
+context: {context}
+
+question: {question}
+```
+
+De esta manera, en cada llamada su usa al LLM para responder a una pregunta considerando unicamente la informacion identificada por el retriever. 
+
+Finalmente se define la cadena de LangChain usada para ejecutar todo el proceso, la cual se compone de un placeholder para recibir tanto la pregunta del usuario como la informacion recuperado por el retriever para contestarla, seguido de la plantilla a evaluar, el modelo LLM y un OutputParser para extraer la respueta del modelo.
+
+```python
+from langchain_core.prompts import PromptTemplate
+from langchain_ollama import ChatOllama
+from langchain_ollama import OllamaEmbeddings
+from langchain.agents import Tool # tool decorator
+from langchain.tools.render import render_text_description # render the description of each tool to include in the prompt
+from langchain_core.output_parsers.string import StrOutputParser
+from langchain_community.vectorstores import FAISS # to implement vector stores
+
+class InstructionsRagAgent:
+    def __init__(self):
+        # create embedding
+        self.embedding = OllamaEmbeddings(model='llama3.1')
+
+        # load information from vector store and create retriever
+        self.vectorstore = FAISS.load_local('vector_stores/instructions', self.embedding, allow_dangerous_deserialization=True)
+        self.retriever = self.vectorstore.as_retriever(search_kwargs={"k": 3})
+
+        # create llm prompt template
+        prompt = '''
+        You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Keep the answer concise.
+
+        context: {context}
+
+        question: {question}
+        '''
+        self.promt_template = PromptTemplate.from_template(prompt)
+
+        # lambda input dictionary
+        input_dic = {'context': lambda x: x['context'],
+                     'question': lambda x: x['question']}
+
+        # llm definition
+        self.llm = ChatOllama(model='llama3.1', temperature=0.6)
+
+        # definition of rag agent chain
+        self.agent = input_dic | self.promt_template | self.llm | StrOutputParser()
+```

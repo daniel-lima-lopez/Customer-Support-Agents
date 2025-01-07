@@ -15,8 +15,7 @@ class ToolsAgent:
         self.instr_agent = InstructionsRagAgent()
         self.trbl_agent = TroubleshootingRagAgent()
 
-        # tools list (instructions and troubleshooting agents)
-        #self.tools = [instructions_agent, troubleshooting_agent]
+        # tools list (to invoke instructions and troubleshooting agents)
         self.tools = [
             Tool(name='invoke_instructions_agent', func=self.invoke_instructions_agent,
             description='Given a question, returns information about the description of the product, product installation instructions, the packet content, its box content, installation steps, main features and maintenance'),
@@ -68,10 +67,12 @@ class ToolsAgent:
             answer = self.invoke_troubleshooting_agent(question)
         return answer
     
+    # tool1
     def invoke_instructions_agent(self, question):
         '''Given a question, returns information about the description of the product, the packet content, its box content, installation steps, main features and maintenance'''
         return self.instr_agent.invoke_agent(question, verbose=self.verbose)
 
+    # tool2
     def invoke_troubleshooting_agent(self, question):
         '''Given a question, returns information about the Troubleshooting Guide, including Wi-Fi connection issues, inaccurate water usage data, leak detection false alarms, system offline, automated watering not working'''
         return self.trbl_agent.invoke_agent(question, verbose=self.verbose)
@@ -100,10 +101,10 @@ class InstructionsRagAgent:
         input_dic = {'context': lambda x: x['context'],
                      'question': lambda x: x['question']}
 
-        # llm and callback definition
+        # llm definition
         self.llm = ChatOllama(model='llama3.1', temperature=0.6)
 
-        # definition of rag agent
+        # definition of rag agent chain
         self.agent = input_dic | self.promt_template | self.llm | StrOutputParser()
     
     def invoke_agent(self, question, verbose=True):
@@ -143,10 +144,10 @@ class TroubleshootingRagAgent:
         input_dic = {'context': lambda x: x['context'],
                      'question': lambda x: x['question']}
 
-        # llm and callback definition
+        # llm definition
         self.llm = ChatOllama(model='llama3.1', temperature=0.6)
 
-        # definition of rag agent
+        # definition of rag agent chain
         self.agent = input_dic | self.promt_template | self.llm | StrOutputParser()
     
     def invoke_agent(self, question, verbose=True):
