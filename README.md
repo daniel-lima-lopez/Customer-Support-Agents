@@ -1,4 +1,4 @@
-# Customer-Support-Agents
+# Customer Support Agents
 Los agentes aprovechan el poder de modelos de lenguaje grandes (LLMs por sus siglas en ingles) para implementar soluciones a tareas no deterministas, es decir, que no siempre se resuelven de la misma manera. Por ejemplo, en este proyecto se estudia el caso de un chat automtizado para servicio al cliente, el cual se encarga de resolver las dudas mas comunes de los usuarios del producto fictisio SmartFlow.
 
 Para implementar este sistema se recurrira a un sistema multiagente. En primer lugar, se diseñaran dos agentes basados en RAG (Retrieval Augmented Generation), los cuales se encargan de responder preguntas considerando un conocimiento ingresado por el diseñador (nosotros en este caso). Cada agente se especializara en dudas relacionadas a dos documentos: el manual de instrucciones del producto y una guia de los problemas mas coumnes. Para acceder a estos sistemas, se implementa un tercer agente, cuya tarea consiste en dada una pregunta del usuario, identificar que agente esta mejor preparado para responderla.
@@ -209,6 +209,8 @@ class ToolsAgent:
         '''Given a question, returns information about the Troubleshooting Guide, including Wi-Fi connection issues, inaccurate water usage data, leak detection false alarms, system offline, automated watering not working'''
         return self.trbl_agent.invoke_agent(question, verbose=self.verbose)
 ```
+
+La implementacion completa se encuentra en el archivo [implementation.py](implementation.py).
 
 ## Ejemplo de uso
 Podemos usar la clase `ToolsAgent()` para usar el modelo implementado para responder preguntas relacionadas al producto SmartFlow. A continuacion se muestran algunos ejemplos:
