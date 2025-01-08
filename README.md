@@ -1,15 +1,15 @@
 # Customer Support Agents
-Los agentes aprovechan el poder de modelos de lenguaje grandes (LLMs por sus siglas en ingles) para implementar soluciones a tareas no deterministas, es decir, que no siempre se resuelven de la misma manera. Por ejemplo, en este proyecto se estudia el caso de un chat automtizado para servicio al cliente, el cual se encarga de resolver las dudas mas comunes de los usuarios del producto fictisio SmartFlow.
+Los agentes aprovechan el poder de modelos de lenguaje grandes (LLMs por sus siglas en inglés) para implementar soluciones a tareas no deterministas, es decir, que no siempre se resuelven de la misma manera. Por ejemplo, en este proyecto se estudia el caso de un chat automatizado para servicio al cliente, el cual se encarga de resolver las dudas mas comunes de los usuarios del producto ficticio SmartFlow.
 
-Para implementar este sistema se recurrira a un sistema multiagente. En primer lugar, se diseñaran dos agentes basados en RAG (Retrieval Augmented Generation), los cuales se encargan de responder preguntas considerando un conocimiento ingresado por el diseñador (nosotros en este caso). Cada agente se especializara en dudas relacionadas a dos documentos: el manual de instrucciones del producto y una guia de los problemas mas coumnes. Para acceder a estos sistemas, se implementa un tercer agente, cuya tarea consiste en dada una pregunta del usuario, identificar que agente esta mejor preparado para responderla.
+Para implementar este sistema se recurre a un sistema multi-agente. En primer lugar, se diseñarán dos agentes basados en RAG (Retrieval Augmented Generation), los cuales se encargan de responder preguntas considerando un conocimiento ingresado por el diseñador (nosotros en este caso). Cada agente se especializará en dudas relacionadas con dos documentos: el manual de instrucciones del producto y una guía de los problemas más comunes. Para acceder a estos sistemas, se implementa un tercer agente, cuya tarea consiste en dada una pregunta del usuario, identificar que agente está mejor preparado para responderla.
 
 # Implementación
-La implementacion del sistema se realizo con Llama 3.1, el cual es un LLM open source de 7B de parametros, por lo cual es ideal para implementarse en una gran variedad de dispositivos.
+La implementación del sistema se realizó con Llama 3.1, el cual es un LLM open source de 7B de parámetros, por lo cual es ideal para implementarse en una gran variedad de dispositivos.
 
 ## Vector Store
-En primer lugar, se implemento el proceso de escritura en un vector store ([vector_store_ingestion.py](vector_store_ingestion.py)). Para ello se dividio cada documento en chunks, y se evaluo a cada uno con el embedding de Llama 3.1. Posteriormente, dado que los documentos son pequeno, se almacenaron los resultados en el local vector store FAISS.
+En primer lugar, se implementó el proceso de escritura en un vector store ([vector_store_ingestion.py](vector_store_ingestion.py)). Para ello se dividió cada documento en chunks, y se evaluó a cada uno con el embedding de Llama 3.1. Posteriormente, dado que los documentos son pequeños, se almacenaron los resultados en el local vector store FAISS.
 
-Esta implementacion se usa para procesar los archivos [instructions.txt](instructions.txt) y [troubleshooting.txt](troubleshooting.txt), resultando en los archivos generados en la carpeta [vector_stores](vector_stores).
+Esta implementación se usa para procesar los archivos [instructions.txt](instructions.txt) y [troubleshooting.txt](troubleshooting.txt), resultando en los archivos generados en la carpeta [vector_stores](vector_stores).
 
 
 ```python
@@ -45,9 +45,9 @@ if __name__ == '__main__':
 ```
 
 ## Agentes RAG
-Ambos agentes (`InstructionsRagAgent()` y `TroubleshootingRagAgent()`) se implementaron con la misma metodologia, en primer lugar, se define un embedding y se procede a realizar la lectura del local vector store con FAISS, y se define un retriever para realizar el proceso de recuperacion de informacion.
+Ambos agentes (`InstructionsRagAgent()` y `TroubleshootingRagAgent()`) se implementaron con la misma metodología, en primer lugar, se define un embedding y se realiza la lectura del local vector store con FAISS, posteriormente se define un retriever para realizar el proceso de recuperación de información.
 
-Posteriormente se define la plantilla del prompt a usar para aprovechar el modelo Llama 3.1. Este prompt se compone de la siguiente manera:
+Posteriormente, se define la plantilla del prompt a usar para aprovechar el modelo Llama 3.1. Este prompt se compone de la siguiente manera:
 
 ```
 You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Keep the answer concise.
@@ -57,9 +57,9 @@ context: {context}
 question: {question}
 ```
 
-De esta manera, en cada llamada su usa al LLM para responder a una pregunta considerando unicamente la informacion identificada por el retriever. 
+De esta manera, en cada llamada se usa al LLM para responder a una pregunta, considerando únicamente la información identificada por el retriever. 
 
-Finalmente se define la cadena de LangChain usada para ejecutar todo el proceso, la cual se compone de un placeholder para recibir tanto la pregunta del usuario como la informacion recuperado por el retriever para contestarla, seguido de la plantilla a evaluar, el modelo LLM y un OutputParser para extraer la respueta del modelo.
+Finalmente, se define la cadena de LangChain usada para ejecutar todo el proceso, la cual se compone de un placeholder para recibir tanto la pregunta del usuario como la información recuperado por el retriever para contestarla, seguido de la plantilla a evaluar, el modelo LLM y un OutputParser para extraer la respuesta del modelo.
 
 ```python
 from langchain_core.prompts import PromptTemplate
@@ -100,7 +100,7 @@ class InstructionsRagAgent:
         self.agent = input_dic | self.promt_template | self.llm | StrOutputParser()
 ```
 
-Posteriormente, se implementa el metodo `invoke_agent`, el cual se encarga de extraer la informacion mas relevante para contestar la pregunta con el retriever, y de esta manera usar el LLM para responder a la pregunta de entrada considerando la informacion recuperada.
+Posteriormente, se implementa el método `invoke_agent`, el cual se encarga de extraer la información más relevante para contestar la pregunta con el retriever, y de esta manera usar el LLM para responder a la pregunta de entrada considerando la información recuperada.
 
 ```python
     def invoke_agent(self, question, verbose=True):
@@ -119,10 +119,10 @@ Posteriormente, se implementa el metodo `invoke_agent`, el cual se encarga de ex
 
 
 
-## Agente de decision
-Por ultimo, se implemento un agente encargado de, dada la pregunta de entreda, identificar al agente con la informacion mas adecuada para responder. Para ello, se define el conjunto de herramientas que tendra disponible el agente para realizar su tarea, incluyendo las rutinas `invoke` de los agentes RAG.
+## Agente de decisión
+Por último, se implementó un agente encargado de, dada la pregunta de entrada, identificar al agente con la información más adecuada para responder. Para ello, se define el conjunto de herramientas que tendrá disponible el agente para realizar su tarea, incluyendo las rutinas `invoke` de los agentes RAG.
 
-Note la definicion de estas herramientas incluye la descripcion de cada herramienta, con el fin de incluir esta informacion como contexto para que el agente sea capaz de identificar la herramientas mas adecuada.
+Note que la definición de estas herramientas incluye la descripción de cada herramienta, con el fin de incluir esta información como contexto para que el agente sea capaz de identificar la herramienta más adecuada.
 
 La plantilla elegida para este agente es la siguiente:
 
@@ -136,7 +136,7 @@ tool names: [{tool_names}]
 question: {input}
 ```
 
-La cadena de LangChain de este agente se construye considerando la platilla anterior, el modelo Llama 3.1 con temperatura 0 para devolver la respuesta mas concisa y un output parser para extraer el nombre de la funcion a usar.
+La cadena de LangChain de este agente se construye considerando la platilla anterior, el modelo Llama 3.1 con temperatura 0 para devolver la respuesta más concisa y un output parser para extraer el nombre de la función a usar.
 
 ```python
 class ToolsAgent:
@@ -210,10 +210,10 @@ class ToolsAgent:
         return self.trbl_agent.invoke_agent(question, verbose=self.verbose)
 ```
 
-La implementacion completa se encuentra en el archivo [implementation.py](implementation.py).
+La implementación completa se encuentra en el archivo [implementation.py](implementation.py).
 
 ## Ejemplo de uso
-Podemos usar la clase `ToolsAgent()` para usar el modelo implementado para responder preguntas relacionadas al producto SmartFlow. A continuacion se muestran algunos ejemplos:
+Podemos usar la clase `ToolsAgent()` para usar el modelo implementado para responder preguntas relacionadas con el producto SmartFlow. A continuación se muestran algunos ejemplos:
 
 ```python
 # define the agent
