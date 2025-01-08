@@ -211,3 +211,109 @@ class ToolsAgent:
 ```
 
 ## Ejemplo de uso
+Podemos usar la clase `ToolsAgent()` para usar el modelo implementado para responder preguntas relacionadas al producto SmartFlow. A continuacion se muestran algunos ejemplos:
+
+```python
+# define the agent
+test = ToolsAgent(verbose=True)
+
+# input question
+question = 'My device is not connecting to the Wi-Fi, what should I do?'
+print(f'\n-------QUESTION-------\n{question}')
+
+# get the answer by invoking the agent
+answer = test.invoke_agent(question)
+print(f'\n-------ANSWER-------\n{answer}')
+```
+
+```
+-------QUESTION-------
+My device is not connecting to the Wi-Fi, what should I do?
+
+-------TOOLS AGENT-------
+The Tools Agent chose the Troubleshooting Rag Agent
+
+Information retrieved by the Troubleshooting Rag Agent:
+3. Leak Detection False Alarms
+
+Inspect the sensors for dirt or moisture.
+Reset the leak detection sensitivity in the app settings.        
+
+4. System Offline
+
+Verify the power supply to the main unit.
+Ensure the firmware is updated to the latest version.
+Contact support if the issue persists.
+
+Troubleshooting Guide for SmartFlow
+1. Device Not Connecting to Wi-Fi
+
+Ensure your router is within 15 meters of the main unit.
+Restart the main unit and your router.
+Verify that the Wi-Fi credentials entered in the app are correct.
+
+2. Inaccurate Water Usage Data
+
+4. System Offline
+
+Verify the power supply to the main unit.
+Ensure the firmware is updated to the latest version.
+Contact support if the issue persists.
+
+5. Automated Watering Not Working
+
+Ensure the schedule is correctly configured in the app.
+Verify the water valve is open and not obstructed.
+
+-------ANSWER-------
+Ensure your router is within 15 meters of the main unit. Restart the main unit and your router. Verify that the Wi-Fi credentials entered 
+in the app are correct.
+```
+
+```python
+# define the agent
+test = ToolsAgent(verbose=True)
+
+# input question
+question = 'What are the installation steps to connect the main unit?'
+print(f'\n-------QUESTION-------\n{question}')
+
+# get the answer by invoking the agent
+answer = test.invoke_agent(question)
+print(f'\n-------ANSWER-------\n{answer}')
+```
+
+```
+-------QUESTION-------
+What are the installation steps to connect the main unit?
+
+-------TOOLS AGENT-------
+The Tools Agent chose the Instruction Rag Agent
+
+Information retrieved by the Instruction Rag Agent:
+2. Box Contents
+
+SmartFlow Main Unit
+SmartFlow Sensors (3 units)
+Power Adapter
+Mounting Kit
+Quick Start Guide
+
+3. Installation Steps
+
+Position the Sensors: Place sensors near the main water inlet, garden area, and any critical appliances (e.g., washing machine).
+Connect the Main Unit:
+Plug the main unit into a power outlet.
+Connect it to your Wi-Fi network using the mobile app.
+
+Instruction Manual for SmartFlow
+1. Introduction
+Thank you for choosing SmartFlow! This intelligent home water management system is designed to help you save water, detect leaks, and maintain optimal hydration for your garden.
+
+2. Box Contents
+
+-------ANSWER-------
+Connect the Main Unit:
+1. Plug the main unit into a power outlet.
+2. Connect it to your Wi-Fi network using the mobile app.
+```

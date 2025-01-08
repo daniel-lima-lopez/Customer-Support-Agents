@@ -156,7 +156,7 @@ class TroubleshootingRagAgent:
         context =  "\n\n".join([doc.page_content for doc in docs])
         
         if verbose:
-            print(f'\nInformation retrieved by the Instruction Rag Agent:\n{context}')
+            print(f'\nInformation retrieved by the Troubleshooting Rag Agent:\n{context}')
 
         # get llm response considering the retrieved information
         output = self.agent.invoke({'context': context, 'question': question})
