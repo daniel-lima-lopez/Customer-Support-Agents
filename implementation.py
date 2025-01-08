@@ -165,61 +165,14 @@ class TroubleshootingRagAgent:
 
 
 if __name__ == '__main__':
-    # test = ToolsAgent()
-    # output = test.invoke_agent('I have problems with the Wi-Fi connection')
-    # print(output)
+    # define the agent
+    test = ToolsAgent(verbose=True)
 
     question = 'What are the installation steps to connect the main unit?'
     #question = 'What does the box contains?'
     #question = 'My device is not connecting to the Wi-Fi, what should I do?'
     print(f'\n-------QUESTION-------\n{question}')
-    # test = TroubleshootingRagAgent()
-    # anws = test.invoke_agent(question)
-
-    test = ToolsAgent(verbose=True)
+    
+    # get the answer by invoking the agent
     answer = test.invoke_agent(question)
     print(f'\n-------ANSWER-------\n{answer}')
-
-
-    # test = ToolsAgent(verbose=True)
-    # answer = test.invoke_agent(question)
-    # print(f'\n-------ANSWER-------\n{answer}')
-
-    # define all agents
-    # tools_agent = ToolsAgent()
-    # instr_agent = InstructionsRagAgent()
-    # trbl_agent = TroubleshootingRagAgent()
-
-    # define the tools for the tools agent
-    # @tool
-    # def instructions_agent(input:str) -> str:
-    #     '''Given a question, returns information about the description of the product, the packet content, its box content, installation steps, main features and maintenance'''
-    #     return instr_agent.invoke_agent(input)
-
-    # @tool
-    # def troubleshooting_agent(input:str) -> str:
-    #     '''Given a question, returns information about the Troubleshooting Guide, including Wi-Fi connection issues, inaccurate water usage data, leak detection false alarms, system offline, automated watering not working'''
-    #     return trbl_agent.invoke_agent(input)
-
-    # given an input query, ask for the right agent
-    # output = tools_agent.invoke_agent(question)
-    
-    # invoke the right agent
-    # if output=='instructions_agent':
-    #     answer = instructions_agent(question)
-    # else:
-    #     answer = troubleshooting_agent(question)
-    # print(f'\n-------ANSWER-------\n{answer}')
-
-
-
-
-
-    # if output=='instructions_agent':
-    #         self.instructions_agent.invoke(input={'input': question})
-    #         if self.verbose:
-    #             print('\nThe Tools Agent chose the Instruction Rag Agent')
-    #     else:
-    #         self.troubleshooting_agent.invoke(input={'input': question})
-    #         if self.verbose:
-    #             print('\nThe Tools Agent chose the Troubleshooting Rag Agent')

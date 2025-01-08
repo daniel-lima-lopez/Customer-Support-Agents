@@ -44,8 +44,8 @@ if __name__ == '__main__':
 
 ```
 
-## RAG Agents
-Ambos agentes se implementaron con la misma metodologia, en primer lugar, se define un embedding y se procede a realizar la lectura del local vector store con FAISS, y se define un retriever para realizar el proceso de recuperacion de informacion.
+## Agentes RAG
+Ambos agentes (`InstructionsRagAgent()` y `TroubleshootingRagAgent()`) se implementaron con la misma metodologia, en primer lugar, se define un embedding y se procede a realizar la lectura del local vector store con FAISS, y se define un retriever para realizar el proceso de recuperacion de informacion.
 
 Posteriormente se define la plantilla del prompt a usar para aprovechar el modelo Llama 3.1. Este prompt se compone de la siguiente manera:
 
@@ -99,3 +99,115 @@ class InstructionsRagAgent:
         # definition of rag agent chain
         self.agent = input_dic | self.promt_template | self.llm | StrOutputParser()
 ```
+
+Posteriormente, se implementa el metodo `invoke_agent`, el cual se encarga de extraer la informacion mas relevante para contestar la pregunta con el retriever, y de esta manera usar el LLM para responder a la pregunta de entrada considerando la informacion recuperada.
+
+```python
+    def invoke_agent(self, question, verbose=True):
+        # get retriever context from question
+        docs = self.retriever.invoke(question)
+        context =  "\n\n".join([doc.page_content for doc in docs])
+
+        if verbose:
+            print(f'\nInformation retrieved by the Instruction Rag Agent:\n{context}')
+
+        # get llm response considering the retrieved information
+        output = self.agent.invoke({'context': context, 'question': question})
+
+        return output
+```
+
+
+
+## Agente de decision
+Por ultimo, se implemento un agente encargado de, dada la pregunta de entreda, identificar al agente con la informacion mas adecuada para responder. Para ello, se define el conjunto de herramientas que tendra disponible el agente para realizar su tarea, incluyendo las rutinas `invoke` de los agentes RAG.
+
+Note la definicion de estas herramientas incluye la descripcion de cada herramienta, con el fin de incluir esta informacion como contexto para que el agente sea capaz de identificar la herramientas mas adecuada.
+
+La plantilla elegida para este agente es la siguiente:
+
+```
+Considering the available tools and their tool names, return only the name of the tool to use to answer the following question:
+        
+tools: {tools description}
+
+tool names: [{tool_names}]
+
+question: {input}
+```
+
+La cadena de LangChain de este agente se construye considerando la platilla anterior, el modelo Llama 3.1 con temperatura 0 para devolver la respuesta mas concisa y un output parser para extraer el nombre de la funcion a usar.
+
+```python
+class ToolsAgent:
+    def __init__(self, verbose=False):
+        self.verbose = verbose # to activate verbose
+
+        # define rag agents
+        self.instr_agent = InstructionsRagAgent()
+        self.trbl_agent = TroubleshootingRagAgent()
+
+        # tools list (to invoke instructions and troubleshooting agents)
+        self.tools = [
+            Tool(name='invoke_instructions_agent', func=self.invoke_instructions_agent,
+            description='Given a question, returns information about the description of the product, product installation instructions, the packet content, its box content, installation steps, main features and maintenance'),
+            Tool(name='invoke_troubleshooting_agent', func=self.invoke_troubleshooting_agent,
+                 description='Given a question, returns information about the Troubleshooting Guide, including Wi-Fi connection issues, inaccurate water usage data, leak detection false alarms, system offline, automated watering not working')
+            ]
+        self.tool_names = ", ".join([t.name for t in self.tools])                                   
+        
+        # prompt definition
+        tools_prompt = ('''
+        Considering the available tools and their tool names, return only the name of the tool to use to answer the following question:
+        
+        tools: {tools}
+
+        tool names: [{tool_names}]
+
+        question: {input}
+        
+        ''')
+        self.tools_promt = PromptTemplate.from_template(tools_prompt).partial(
+            tools=render_text_description(self.tools),
+            tool_names=self.tool_names
+        )
+
+        # lambda input dictionary
+        input_dic = {'input': lambda x: x['input']}
+
+        # llm and callback definition
+        self.llm = ChatOllama(model='llama3.1', temperature=0.0)
+
+        # definition of the tools pipe
+        self.tools_agent = input_dic | self.tools_promt | self.llm | StrOutputParser()
+
+    def invoke_agent(self, question):
+        output = self.tools_agent.invoke({'input': question})
+
+        # print choosen agent
+        if self.verbose:
+            print('\n-------TOOLS AGENT-------')
+            if output=='invoke_instructions_agent':
+                print('The Tools Agent chose the Instruction Rag Agent')
+            else:
+                print('The Tools Agent chose the Troubleshooting Rag Agent')
+        
+        # invoke the rag agent
+        if output=='invoke_instructions_agent':
+            answer = self.invoke_instructions_agent(question)
+        else:
+            answer = self.invoke_troubleshooting_agent(question)
+        return answer
+    
+    # tool1
+    def invoke_instructions_agent(self, question):
+        '''Given a question, returns information about the description of the product, the packet content, its box content, installation steps, main features and maintenance'''
+        return self.instr_agent.invoke_agent(question, verbose=self.verbose)
+
+    # tool2
+    def invoke_troubleshooting_agent(self, question):
+        '''Given a question, returns information about the Troubleshooting Guide, including Wi-Fi connection issues, inaccurate water usage data, leak detection false alarms, system offline, automated watering not working'''
+        return self.trbl_agent.invoke_agent(question, verbose=self.verbose)
+```
+
+## Ejemplo de uso
